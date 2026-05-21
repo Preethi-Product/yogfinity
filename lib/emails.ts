@@ -241,24 +241,38 @@ export async function sendBookingEmails(booking: BookingDetails): Promise<{
   const teamEmail = buildTeamEmail(booking);
   const customerEmail = buildCustomerEmail(booking);
 
-  const [teamRes, customerRes] = await Promise.allSettled([
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to: TEAM_RECIPIENTS,
-      replyTo: booking.email,
-      subject: teamEmail.subject,
-      html: teamEmail.html,
-      text: teamEmail.text,
-    }),
-    resend.emails.send({
-      from: FROM_ADDRESS,
-      to: [booking.email],
-      replyTo: TEAM_RECIPIENTS[0],
-      subject: customerEmail.subject,
-      html: customerEmail.html,
-      text: customerEmail.text,
-    }),
-  ]);
+  // Send to each team member separately so one rejected recipient
+  // (common on Resend's free tier without a verified domain) doesn't
+  // block the rest. Customer confirmation always goes out independently.
+  const sendPromises: Array<{
+    label: string;
+    promise: Promise<unknown>;
+  }> = [
+    ...TEAM_RECIPIENTS.map((recipient) => ({
+      label: `team:${recipient}`,
+      promise: resend.emails.send({
+        from: FROM_ADDRESS,
+        to: [recipient],
+        replyTo: booking.email,
+        subject: teamEmail.subject,
+        html: teamEmail.html,
+        text: teamEmail.text,
+      }),
+    })),
+    {
+      label: "customer",
+      promise: resend.emails.send({
+        from: FROM_ADDRESS,
+        to: [booking.email],
+        replyTo: TEAM_RECIPIENTS[0],
+        subject: customerEmail.subject,
+        html: customerEmail.html,
+        text: customerEmail.text,
+      }),
+    },
+  ];
+
+  const settled = await Promise.allSettled(sendPromises.map((p) => p.promise));
 
   const interpret = (res: PromiseSettledResult<unknown>): SendResult => {
     if (res.status === "rejected") {
@@ -271,15 +285,26 @@ export async function sendBookingEmails(booking: BookingDetails): Promise<{
     return { ok: true };
   };
 
-  const result = {
-    team: interpret(teamRes),
-    customer: interpret(customerRes),
-  };
+  const teamResults = settled
+    .slice(0, TEAM_RECIPIENTS.length)
+    .map((res, i) => ({ recipient: TEAM_RECIPIENTS[i], ...interpret(res) }));
 
-  if (!result.team.ok)
-    console.error("[bookings/email] team send failed:", result.team.error);
-  if (!result.customer.ok)
-    console.error("[bookings/email] customer send failed:", result.customer.error);
+  const customer = interpret(settled[TEAM_RECIPIENTS.length]);
 
-  return result;
+  for (const r of teamResults) {
+    if (r.ok) {
+      console.log(`[bookings/email] team send ok → ${r.recipient}`);
+    } else {
+      console.error(`[bookings/email] team send failed → ${r.recipient}:`, r.error);
+    }
+  }
+  if (!customer.ok)
+    console.error("[bookings/email] customer send failed:", customer.error);
+
+  // "team" is considered successful if at least one team email landed.
+  const team: SendResult = teamResults.some((r) => r.ok)
+    ? { ok: true }
+    : { ok: false, error: teamResults.map((r) => r.error).filter(Boolean).join("; ") };
+
+  return { team, customer };
 }

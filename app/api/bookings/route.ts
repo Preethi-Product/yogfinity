@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import { sendBookingEmails } from "@/lib/emails";
+import type { StoredBooking } from "@/lib/db/bookings";
+import { getBookingCount, saveBooking } from "@/lib/db/store";
 
 export const runtime = "nodejs";
 
@@ -12,37 +12,12 @@ interface BookingPayload {
   classChoice?: string;
 }
 
-interface StoredBooking extends BookingPayload {
-  id: string;
-  createdAt: string;
-}
-
-// Vercel serverless: only /tmp is writable; local dev uses ./data
-const DATA_DIR = process.env.VERCEL
-  ? path.join("/tmp", "yogfinity")
-  : path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "bookings.json");
-
 function isValid(p: Partial<BookingPayload>): p is BookingPayload {
   if (!p.name || typeof p.name !== "string" || p.name.trim().length < 2) return false;
   if (!p.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) return false;
   const digits = (p.phone ?? "").replace(/\D/g, "");
   if (digits.length < 7) return false;
   return true;
-}
-
-async function readBookings(): Promise<StoredBooking[]> {
-  try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
-    return JSON.parse(raw) as StoredBooking[];
-  } catch {
-    return [];
-  }
-}
-
-async function writeBookings(bookings: StoredBooking[]) {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(DATA_FILE, JSON.stringify(bookings, null, 2), "utf-8");
 }
 
 export async function POST(req: Request) {
@@ -72,10 +47,10 @@ export async function POST(req: Request) {
     createdAt: new Date().toISOString(),
   };
 
+  let storage: "postgres" | "file";
   try {
-    const existing = await readBookings();
-    existing.push(booking);
-    await writeBookings(existing);
+    const result = await saveBooking(booking);
+    storage = result.storage;
   } catch (err) {
     console.error("[bookings] failed to persist:", err);
     return NextResponse.json(
@@ -85,7 +60,7 @@ export async function POST(req: Request) {
   }
 
   console.log(
-    `[bookings] new assessment request — ${booking.name} <${booking.email}> ${booking.phone}${
+    `[bookings] saved (${storage}) — ${booking.name} <${booking.email}> ${booking.phone}${
       booking.classChoice ? ` · ${booking.classChoice}` : ""
     }`
   );
@@ -100,6 +75,7 @@ export async function POST(req: Request) {
       ok: true,
       id: booking.id,
       message: "Booking received.",
+      storage,
       emails: emails
         ? {
             team: emails.team.ok,
@@ -113,6 +89,11 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const bookings = await readBookings();
-  return NextResponse.json({ count: bookings.length });
+  try {
+    const { count, storage } = await getBookingCount();
+    return NextResponse.json({ count, storage });
+  } catch (err) {
+    console.error("[bookings] count failed:", err);
+    return NextResponse.json({ error: "Could not read bookings." }, { status: 500 });
+  }
 }

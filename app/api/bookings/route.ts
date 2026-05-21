@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import { sendBookingEmails } from "@/lib/emails";
 
 export const runtime = "nodejs";
 
@@ -89,8 +90,24 @@ export async function POST(req: Request) {
     }`
   );
 
+  const emails = await sendBookingEmails(booking).catch((err) => {
+    console.error("[bookings] unexpected email error:", err);
+    return null;
+  });
+
   return NextResponse.json(
-    { ok: true, id: booking.id, message: "Booking received." },
+    {
+      ok: true,
+      id: booking.id,
+      message: "Booking received.",
+      emails: emails
+        ? {
+            team: emails.team.ok,
+            customer: emails.customer.ok,
+            skipped: emails.team.skipped || emails.customer.skipped || false,
+          }
+        : null,
+    },
     { status: 201 }
   );
 }

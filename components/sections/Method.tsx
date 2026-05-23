@@ -43,9 +43,9 @@ export default function Method() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
           <div className="lg:col-span-2 flex lg:justify-center">
             <ScrollReveal>
-              <span className="font-sans text-xs tracking-[0.35em] text-amber uppercase lg:[writing-mode:vertical-lr] lg:rotate-180 block">
+              <h2 className="font-sans text-xs tracking-[0.35em] text-amber uppercase lg:[writing-mode:vertical-lr] lg:rotate-180 block">
                 {method.label}
-              </span>
+              </h2>
             </ScrollReveal>
           </div>
 

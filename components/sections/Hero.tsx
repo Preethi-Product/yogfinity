@@ -60,11 +60,11 @@ export default function Hero() {
         </ScrollReveal>
 
         <ScrollReveal delay={80}>
-          <h1 className="font-display italic text-long-shadow leading-[1] mb-8 font-light">
-            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[5.25rem] xl:text-[6rem] text-ivory">
+          <h1 className="font-display italic text-long-shadow leading-[1] mb-8 font-light text-5xl sm:text-6xl md:text-7xl lg:text-[5.25rem] xl:text-[6rem]">
+            <span className="block text-ivory">
               {hero.line1}
             </span>
-            <span className="block text-5xl sm:text-6xl md:text-7xl lg:text-[5.25rem] xl:text-[6rem] text-amber mt-2">
+            <span className="block text-amber mt-2">
               {hero.line2}
             </span>
           </h1>

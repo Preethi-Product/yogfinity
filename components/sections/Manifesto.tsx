@@ -10,6 +10,7 @@ export default function Manifesto() {
       className="relative bg-ivory text-obsidian py-28 md:py-36 diagonal-top diagonal-bottom"
     >
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
+        <h2 className="sr-only">Our Philosophy</h2>
         <ScrollReveal>
           <blockquote className="text-center max-w-4xl mx-auto mb-20 md:mb-28">
             <p className="font-display text-3xl md:text-4xl lg:text-5xl italic font-light leading-snug text-obsidian">

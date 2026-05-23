@@ -82,6 +82,44 @@ export const method = {
   ],
 } as const;
 
+export const whyYogfinity = {
+  id: "why",
+  label: "WHY YOGFINITY",
+  heading: "What Makes Us Different",
+  usps: [
+    {
+      number: "01",
+      title: "Personalised Yoga Based on Body Nature",
+      quote: "No two bodies move the same. Every session is curated according to an individual's inner and outer body nature.",
+      tags: ["Mobility", "Stress Patterns", "Flexibility", "Lifestyle", "Athletic Demands", "Recovery Capacity", "Breath Patterns"],
+    },
+    {
+      number: "02",
+      title: "Yoga for Athletes & High Performers",
+      quote: "We train movement, not just muscles.",
+      tags: ["Athletic Performance", "Injury Prevention", "Recovery", "Focus Enhancement", "Mobility Optimization"],
+    },
+    {
+      number: "03",
+      title: "Fascia-Focused Movement System",
+      quote: "We focus on the body's connective intelligence — fascia.",
+      tags: ["Elasticity", "Recoil", "Hydration", "Movement Efficiency", "Joint Freedom"],
+    },
+    {
+      number: "04",
+      title: "Alignment-Based Training",
+      quote: "Correct alignment creates sustainable strength.",
+      tags: ["Postural Correction", "Movement Efficiency", "Joint Safety", "Functional Mobility"],
+    },
+    {
+      number: "05",
+      title: "Beyond Physical Fitness",
+      quote: "Performance is not only physical. It is neurological, emotional, and energetic.",
+      tags: ["Focus", "Breath Control", "Nervous System Regulation", "Recovery", "Mental Clarity"],
+    },
+  ],
+} as const;
+
 export const classes = {
   id: "classes",
   heading: "Our Classes",
@@ -238,7 +276,7 @@ export const footer = {
     placeholder: "your@email.com",
     button: "Join the Movement",
   },
-  copyright: "© 2026 YOGFINITY. All rights reserved.",
+  copyright: "© YOGFINITY. All rights reserved.",
   legal: [
     { label: "Privacy", href: "#" },
     { label: "Terms", href: "#" },

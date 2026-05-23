@@ -11,6 +11,7 @@ import BookingModal from "@/components/booking/BookingModal";
 import Hero from "@/components/sections/Hero";
 import Manifesto from "@/components/sections/Manifesto";
 import Method from "@/components/sections/Method";
+import WhyYogfinity from "@/components/sections/WhyYogfinity";
 import Classes from "@/components/sections/Classes";
 import Teachers from "@/components/sections/Teachers";
 import Studio from "@/components/sections/Studio";
@@ -35,6 +36,7 @@ export default function HomePage() {
           <Hero />
           <Manifesto />
           <Method />
+          <WhyYogfinity />
           <Classes />
           <Teachers />
           <Studio />

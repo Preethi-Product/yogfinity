@@ -152,10 +152,14 @@ test.describe("Booking Flow", () => {
   test("Booking modal closes when clicking outside (backdrop)", async ({ page }) => {
     const modal = await openBookingModal(page);
 
-    // Click the backdrop (button with aria-label "Close booking dialog")
-    const backdrop = page.getByRole("button", { name: /Close booking dialog/i });
-    await backdrop.click();
-    await page.waitForTimeout(500);
+    // The backdrop button is behind the modal dialog - click at a coordinate outside the dialog
+    // The modal dialog is centered; click at the very top-left corner (outside dialog)
+    const viewportSize = page.viewportSize();
+    const vw = viewportSize?.width ?? 393;
+
+    // Click in the top-left corner (should hit backdrop since modal is centered)
+    await page.mouse.click(5, 5);
+    await page.waitForTimeout(800);
 
     await expect(modal).not.toBeVisible();
   });

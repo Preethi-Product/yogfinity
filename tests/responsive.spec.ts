@@ -125,13 +125,15 @@ test.describe("Responsive / Mobile Layout", () => {
     const viewportWidth = viewportSize?.width ?? 393;
     const viewportHeight = viewportSize?.height ?? 851;
 
-    // Open booking modal
-    const bookingSection = page.locator("#booking");
-    await bookingSection.scrollIntoViewIfNeeded();
+    // Open booking modal via mobile menu (since navbar CTA is hidden on mobile)
+    const hamburger = page.getByRole("button", { name: /Open menu/i });
+    await expect(hamburger).toBeVisible();
+    await hamburger.click();
     await page.waitForTimeout(500);
 
-    const ctaButton = bookingSection.getByRole("button", { name: /Claim Your Founding Spot/i });
-    await ctaButton.click();
+    const bookBtn = page.getByRole("button", { name: /Book a Class/i });
+    await expect(bookBtn).toBeVisible();
+    await bookBtn.click();
     await page.waitForTimeout(500);
 
     const modal = page.locator('[role="dialog"]');

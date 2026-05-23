@@ -71,12 +71,17 @@ test.describe("Navigation & Links", () => {
   test("Clicking nav link closes mobile menu and scrolls to section", async ({ page }) => {
     const hamburger = page.getByRole("button", { name: /Open menu/i });
     await hamburger.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(600);
 
-    // Click the Classes link inside the menu
-    const classesLink = page.locator("ul li a[href='#classes']").last();
+    // The mobile menu (fixed overlay) contains nav links at text-3xl size
+    // Target the link inside the fixed overlay (z-[60] div)
+    const mobileOverlay = page.locator(".fixed.inset-0.z-\\[60\\]");
+    await expect(mobileOverlay).toBeVisible();
+
+    const classesLink = mobileOverlay.locator("a[href='#classes']").first();
+    await expect(classesLink).toBeVisible();
     await classesLink.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1200);
 
     // Menu should close
     const closeButton = page.getByRole("button", { name: /Close menu/i });
